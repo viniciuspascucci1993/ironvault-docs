@@ -64,6 +64,7 @@ PORT=8080
 | GET | /api/payments/{id} | JWT | Buscar pagamento |
 | PATCH | /api/payments/{id}/status | ADMIN | Atualizar status |
 | POST | /api/payments/webhooks/mock | HMAC | Webhook mock |
+| POST | /api/payments/webhooks/mercadopago | Público | Webhook MercadoPago |
 
 ## Banco de Dados
 
@@ -75,9 +76,3 @@ idempotency
 outbox_events
 webhook_delivery_attempts
 ```
-
-## Observações
-
-> ⚠️ O webhook do MercadoPago ainda não está configurado em produção.
-> Status pode ser atualizado manualmente via `PATCH /api/payments/{id}/status`
-> ou via endpoint mock. A implementação do webhook real está no roadmap.

@@ -207,16 +207,10 @@ Todos os serviços são deployados no **Railway** com deploy automático a parti
 6. Auth atualiza senha
 ```
 
-> ⚠️ **Observação:** O PIX é gerado em produção via MercadoPago.
-> Porém o **webhook** do MercadoPago ainda não está configurado —
-> o status é atualizado manualmente via `PATCH /api/payments/{id}/status`
-> ou via endpoint mock `POST /api/payments/webhooks/mock`.
-> A configuração do webhook real está no roadmap.
-
 ## 🗺️ Roadmap
 
 ### Em andamento
-- [ ] Webhook MercadoPago (atualização automática de status)
+  - [ ] Gráficos no dashboard (Recharts)
 
 ### Próximos passos
 - [ ] Pagar.me (cartão de crédito) — aguarda abertura de MEI
@@ -244,3 +238,4 @@ Todos os serviços são deployados no **Railway** com deploy automático a parti
 - [x] Backoffice MVP (login, dashboard, transactions, users, profile, route protection, role-based access, token refresh)
 - [x] Deploy de todos os serviços no Railway
 - [x] Domínios customizados configurados
+- [x] Webhook MercadoPago
