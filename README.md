@@ -210,32 +210,37 @@ Todos os serviços são deployados no **Railway** com deploy automático a parti
 ## 🗺️ Roadmap
 
 ### Em andamento
-  - [ ] Gráficos no dashboard (Recharts)
-
-### Próximos passos
-- [ ] Pagar.me (cartão de crédito) — aguarda abertura de MEI
-- [ ] E-commerce de calçados (primeiro cliente real)
-- [ ] Logs de auditoria no backoffice
-- [ ] Página de configurações no backoffice
-- [ ] README de cada serviço
-
-### Futuro
-- [ ] App mobile
-- [ ] API pública para integração de parceiros
-- [ ] Dashboard analytics avançado
-- [ ] PCI-DSS compliance
 - [ ] Gráficos no dashboard (Recharts)
   - Transações por período
   - Distribuição por status
   - Receita acumulada
   - Novos usuários
 
+### Próximos passos
+- [ ] Teste real do webhook MercadoPago em produção
+- [ ] Log de login (usuário, data/hora, IP)
+- [ ] Fluxo de aprovação de MERCHANTs no backoffice
+- [ ] Landing page com formulário de cadastro de parceiros
+- [ ] API Key por MERCHANT para integração
+- [ ] Pagar.me (cartão de crédito) — aguarda abertura de MEI
+- [ ] E-commerce de calçados (primeiro cliente real)
+- [ ] Logs de auditoria no backoffice
+- [ ] Página de configurações no backoffice
+
+### Futuro
+- [ ] App mobile
+- [ ] API pública para integração de parceiros
+- [ ] Dashboard analytics avançado por MERCHANT
+- [ ] Webhook configurável por MERCHANT
+- [ ] PCI-DSS compliance
+- [ ] Landing page institucional
+
 ### Concluído
 - [x] Auth completo (JWT, refresh, rate limit, email confirm, forgot/reset/change password)
 - [x] Payments PIX via MercadoPago
+- [x] Webhook MercadoPago implementado
 - [x] Notifications (templates, Resend)
 - [x] BFF (todas as rotas, middleware JWT, CORS, dashboard)
 - [x] Backoffice MVP (login, dashboard, transactions, users, profile, route protection, role-based access, token refresh)
 - [x] Deploy de todos os serviços no Railway
 - [x] Domínios customizados configurados
-- [x] Webhook MercadoPago
