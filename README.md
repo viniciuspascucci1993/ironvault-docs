@@ -73,7 +73,7 @@ Redis
 | Serviço | URL |
 |---------|-----|
 | Auth | https://auth.ironvaultpayments.com.br |
-| Payments | api.ironvaultpayments.com.br |
+| Payments | https://api.ironvaultpayments.com.br |
 | Notifications | https://notifications.ironvaultpayments.com.br |
 | BFF | https://bff.ironvaultpayments.com.br |
 | Backoffice | https://backoffice.ironvaultpayments.com.br |
@@ -244,3 +244,4 @@ Todos os serviços são deployados no **Railway** com deploy automático a parti
 - [x] Backoffice MVP (login, dashboard, transactions, users, profile, route protection, role-based access, token refresh)
 - [x] Deploy de todos os serviços no Railway
 - [x] Domínios customizados configurados
+- [x] Cadastro de novos usuários (MERCHANT) pelo backoffice com senha temporária
