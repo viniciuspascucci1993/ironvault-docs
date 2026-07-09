@@ -210,11 +210,7 @@ Todos os serviços são deployados no **Railway** com deploy automático a parti
 ## 🗺️ Roadmap
 
 ### Em andamento
-- [ ] Gráficos no dashboard (Recharts)
-  - Transações por período
-  - Distribuição por status
-  - Receita acumulada
-  - Novos usuários
+
 
 ### Próximos passos
 - [ ] Teste real do webhook MercadoPago em produção
@@ -245,3 +241,7 @@ Todos os serviços são deployados no **Railway** com deploy automático a parti
 - [x] Deploy de todos os serviços no Railway
 - [x] Domínios customizados configurados
 - [x] Cadastro de novos usuários (MERCHANT) pelo backoffice com senha temporária
+- [x] Gráficos no dashboard (Recharts)
+  - Transações por período
+  - Distribuição por status
+  - Receita acumulada
