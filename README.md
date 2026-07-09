@@ -210,7 +210,7 @@ Todos os serviços são deployados no **Railway** com deploy automático a parti
 ## 🗺️ Roadmap
 
 ### Em andamento
-
+- [ ] Link "Esqueceu a senha?" na tela de login
 
 ### Próximos passos
 - [ ] Teste real do webhook MercadoPago em produção
