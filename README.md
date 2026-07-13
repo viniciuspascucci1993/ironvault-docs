@@ -214,7 +214,6 @@ Todos os serviços são deployados no **Railway** com deploy automático a parti
 
 ### Próximos passos
 - [ ] Teste real do webhook MercadoPago em produção
-- [ ] Log de login (usuário, data/hora, IP)
 - [ ] Fluxo de aprovação de MERCHANTs no backoffice
 - [ ] Landing page com formulário de cadastro de parceiros
 - [ ] API Key por MERCHANT para integração
