@@ -81,6 +81,7 @@ PORT=8081
 | GET | /api/users/{id} | ADMIN | Buscar usuário |
 | PATCH | /api/users/{id}/status | ADMIN | Atualizar status |
 | PATCH | /api/users/{id}/role | ADMIN | Atualizar role |
+| GET | /api/auth/login-logs | ADMIN | Listar logs de login |
 
 ## Banco de Dados
 

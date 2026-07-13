@@ -220,7 +220,6 @@ Todos os serviços são deployados no **Railway** com deploy automático a parti
 - [ ] API Key por MERCHANT para integração
 - [ ] Pagar.me (cartão de crédito) — aguarda abertura de MEI
 - [ ] E-commerce de calçados (primeiro cliente real)
-- [ ] Logs de auditoria no backoffice
 - [ ] Página de configurações no backoffice
 
 ### Futuro
@@ -246,3 +245,4 @@ Todos os serviços são deployados no **Railway** com deploy automático a parti
   - Distribuição por status
   - Receita acumulada
 - [x] Link "Esqueceu a senha?" na tela de login
+- [x] Log de login (usuário, data/hora, IP)
