@@ -210,12 +210,11 @@ Todos os serviços são deployados no **Railway** com deploy automático a parti
 ## 🗺️ Roadmap
 
 ### Em andamento
-  ....
+  
 
 ### Próximos passos
 - [ ] Fluxo de aprovação de MERCHANTs no backoffice
 - [ ] Landing page com formulário de cadastro de parceiros
-- [ ] API Key por MERCHANT para integração
 - [ ] Pagar.me (cartão de crédito) — aguarda abertura de MEI
 - [ ] E-commerce de calçados (primeiro cliente real)
 
@@ -245,3 +244,4 @@ Todos os serviços são deployados no **Railway** com deploy automático a parti
 - [x] Log de login (usuário, data/hora, IP)
 - [x] Teste real do webhook MercadoPago em produção — status atualizado automaticamente após pagamento
 - [x] Página de configurações no backoffice
+- [x] API Key por MERCHANT para integração
