@@ -245,3 +245,6 @@ Todos os serviços são deployados no **Railway** com deploy automático a parti
 - [x] Página de configurações no backoffice
 - [x] API Key por MERCHANT para integração
 - [x] Fluxo de aprovação de MERCHANTs no backoffice
+- [x] Email de notificação ao aprovar/rejeitar MERCHANT
+- [x] Seed automático do ADMIN via variáveis de ambiente
+- [x] Fluxo simplificado de cadastro de MERCHANT (email confirmado automaticamente)
