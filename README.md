@@ -77,6 +77,7 @@ Redis
 | Notifications | https://notifications.ironvaultpayments.com.br |
 | BFF | https://bff.ironvaultpayments.com.br |
 | Backoffice | https://backoffice.ironvaultpayments.com.br |
+| Landing | https://landing.ironvaultpayments.com.br |
 
 ## 🚀 Como Rodar Localmente
 
@@ -213,7 +214,6 @@ Todos os serviços são deployados no **Railway** com deploy automático a parti
   
 
 ### Próximos passos
-- [ ] Landing page com formulário de cadastro de parceiros
 - [ ] Pagar.me (cartão de crédito) — aguarda abertura de MEI
 - [ ] E-commerce de calçados (primeiro cliente real)
 
@@ -248,3 +248,4 @@ Todos os serviços são deployados no **Railway** com deploy automático a parti
 - [x] Email de notificação ao aprovar/rejeitar MERCHANT
 - [x] Seed automático do ADMIN via variáveis de ambiente
 - [x] Fluxo simplificado de cadastro de MERCHANT (email confirmado automaticamente)
+- [x] Landing page com formulário de cadastro de parceiros
