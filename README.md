@@ -78,6 +78,7 @@ Redis
 | BFF | https://bff.ironvaultpayments.com.br |
 | Backoffice | https://backoffice.ironvaultpayments.com.br |
 | Landing | https://landing.ironvaultpayments.com.br |
+| Merchants | https://merchants.ironvaultpayments.com.br |
 
 ## 🚀 Como Rodar Localmente
 
@@ -252,3 +253,5 @@ Todos os serviços são deployados no **Railway** com deploy automático a parti
 - [x] Toast de feedback no login
 - [x] Melhorias no dashboard por role (MERCHANT não vê Total de Usuários)
 - [x] Seed automático do ADMIN via variáveis de ambiente
+- [x] Serviço ironvault-merchants criado
+- [x] Perfil do MERCHANT visível no backoffice para aprovação
