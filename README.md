@@ -23,22 +23,27 @@ O IronVault Payments é um ecossistema completo de pagamentos desenvolvido do ze
 - **Escalabilidade** — arquitetura de microsserviços independentes
 - **Confiabilidade** — retry automático, idempotência, outbox pattern
 - **Developer Experience** — API bem documentada, BFF para o frontend
+- **Marketplace/Split payment** — cada lojista recebe direto na própria conta Mercado Pago, com comissão do IronVault retida automaticamente via `application_fee`
 
 ## 🏗️ Arquitetura
 
+```
 ironvault-backoffice (Next.js 16)
-↓
+         ↓
 ironvault-bff (Fastify/Node.js)
-↓         ↓         ↓
-ironvault  ironvault  ironvault
--auth    -payments  -notifications
-(Java 21)  (Java 21)   (Java 21)
-↓         ↓
-Neon      Neon       Resend
-PostgreSQL PostgreSQL  (emails)
-↓
-Redis
-(rate limit)
+    ↓      ↓      ↓        ↓
+ironvault  ironvault  ironvault  ironvault
+-auth    -payments  -notif.   -merchants
+(Java 21)  (Java 21)  (Java 21)  (Java 21)
+    ↓         ↓                    ↓
+  Neon      Neon      Resend      Neon
+PostgreSQL PostgreSQL (emails)  PostgreSQL
+    ↓         ↓
+  Redis    Mercado Pago
+(rate limit)  (PIX / OAuth)
+```
+
+`ironvault-auth` e `ironvault-merchants` trocam informação de forma assíncrona (via chamada interna autenticada por `INTERNAL_API_KEY`) para sincronizar o vínculo `userId ↔ merchantId`, permitindo que o JWT carregue a claim `merchantId` sem acoplar o login a uma chamada em tempo real entre os serviços.
 
 ## 🛠️ Stack Tecnológica
 
@@ -94,6 +99,7 @@ Redis
 git clone https://github.com/viniciuspascucci1993/ironvault-auth.git
 git clone https://github.com/viniciuspascucci1993/ironvault-payments.git
 git clone https://github.com/viniciuspascucci1993/ironvault-notifications.git
+git clone https://github.com/viniciuspascucci1993/ironvault-merchants.git
 git clone https://github.com/viniciuspascucci1993/ironvault-bff.git
 git clone https://github.com/viniciuspascucci1993/ironvault-backoffice.git
 
@@ -117,6 +123,11 @@ cd ironvault-payments
 # Notifications (porta 8082)
 cd ironvault-notifications
 ./mvnw spring-boot:run
+
+# Merchants (porta 8083)
+cd ironvault-merchants
+./mvnw spring-boot:run
+```
 
 ### 4. Rodar o BFF
 
@@ -153,19 +164,23 @@ Todos os serviços são deployados no **Railway** com deploy automático a parti
 
 ### Ordem de deploy
 
+Ao alterar algo que envolva a integração `merchantId` (auth ↔ merchants ↔ payments), seguir esta ordem para evitar erros transitórios:
+
 1. `ironvault-notifications`
 2. `ironvault-auth`
-3. `ironvault-payments`
-4. `ironvault-bff`
-5. `ironvault-backoffice`
+3. `ironvault-merchants`
+4. `ironvault-payments`
+5. `ironvault-bff`
+6. `ironvault-backoffice`
 
 ### Bancos de dados (Neon)
 
 | Banco | Serviço |
 |-------|---------|
-| ironvault-auth | Users, tokens, refresh tokens |
+| ironvault-auth | Users, tokens, refresh tokens, api keys |
 | ironvault-payments | Payments, transactions, webhooks |
 | ironvault-notifications | Notification events, logs |
+| ironvault-merchants | Merchant profiles, gateway credentials (Mercado Pago) |
 
 ## 🔄 Fluxos Principais
 
@@ -186,18 +201,33 @@ Todos os serviços são deployados no **Railway** com deploy automático a parti
 3. Auth verifica rate limiting (Redis)
 4. Auth verifica email confirmado
 5. Auth retorna accessToken + refreshToken
+   (accessToken inclui merchantId se o usuário tiver um MerchantProfile vinculado)
+```
+
+### Cadastro de lojista e conexão Mercado Pago (split payment)
+```
+1. Lojista se cadastra na landing → User criado como PENDING no ironvault-auth
+2. Admin aprova o lojista no backoffice
+3. Lojista loga e preenche o perfil de negócio → MerchantProfile criado no
+   ironvault-merchants (gera o merchantId)
+4. ironvault-merchants sincroniza o merchantId de volta ao ironvault-auth
+5. Lojista conecta a própria conta Mercado Pago via OAuth
+   (authorize-url → autorização → callback salva o access_token do lojista)
+6. Próximo login do lojista já emite JWT com a claim merchantId
 ```
 
 ### Pagamento PIX
 ```
-1. POST /api/payments
-2. Payments gera PIX via MercadoPago
-3. Payments salva no banco com status PROCESSING
-4. Payments envia evento para Notifications
-5. Notifications envia email com QR Code
-6. Webhook MercadoPago → atualiza status (APPROVED/FAILED)
+1. POST /api/payments (JWT do lojista logado)
+2. Payments extrai o merchantId da claim do token e vincula ao Payment/Transaction
+3. Payments gera PIX via MercadoPago
+4. Payments salva no banco com status PROCESSING
+5. Payments envia evento para Notifications
+6. Notifications envia email com QR Code
+7. Webhook MercadoPago → atualiza status (APPROVED/FAILED)
 ```
 
+> O split de fato (pagamento usando o token do lojista + `application_fee`, para o dinheiro cair direto na conta dele) ainda está pendente de implementação — ver Roadmap.
 
 ### Recuperação de senha
 ```
@@ -212,11 +242,15 @@ Todos os serviços são deployados no **Railway** com deploy automático a parti
 ## 🗺️ Roadmap
 
 ### Em andamento
-  
+- [ ] Split de pagamento de fato: `ironvault-payments` usar o `access_token` do lojista + `application_fee` na criação do PIX
+- [ ] Botão "Conectar Mercado Pago" no backoffice (frontend)
+- [ ] Endpoint de status de conexão MP (`GET /status/{merchantId}`) e redirect amigável no callback OAuth
 
 ### Próximos passos
 - [ ] Pagar.me (cartão de crédito) — aguarda abertura de MEI
 - [ ] E-commerce de calçados (primeiro cliente real)
+- [ ] Migração de `ddl-auto: update` para Flyway (controle de schema versionado)
+- [ ] CNPJ/regularização formal do IronVault antes de operar split com volume real
 
 ### Futuro
 - [ ] App mobile
@@ -255,3 +289,6 @@ Todos os serviços são deployados no **Railway** com deploy automático a parti
 - [x] Seed automático do ADMIN via variáveis de ambiente
 - [x] Serviço ironvault-merchants criado
 - [x] Perfil do MERCHANT visível no backoffice para aprovação
+- [x] Fluxo OAuth de conexão da conta Mercado Pago do lojista (authorize-url, callback, persistência do access_token/refresh_token)
+- [x] `merchantId` propagado em Payment e Transaction, com ownership check (dono ou ADMIN) em todos os endpoints de consulta
+- [x] Sincronização assíncrona `merchantId` entre ironvault-merchants e ironvault-auth, com claim `merchantId` no JWT
