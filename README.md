@@ -48,6 +48,7 @@ PostgreSQL PostgreSQL (emails)  PostgreSQL
 ## 🛠️ Stack Tecnológica
 
 ### Backend
+
 - Java 21 + Spring Boot 3.3.5
 - PostgreSQL (Neon)
 - Redis (rate limiting)
@@ -57,37 +58,41 @@ PostgreSQL PostgreSQL (emails)  PostgreSQL
 - Resend (emails)
 
 ### BFF
+
 - Node.js + Fastify v5
 - TypeScript
 - Axios
 - fastify-plugin
 
 ### Frontend
+
 - Next.js 16 (App Router)
 - TypeScript
 - Tailwind CSS
 - Lucide React
 
 ### Infraestrutura
+
 - Railway (deploy)
 - Neon (PostgreSQL serverless)
 - Redis (Railway)
 
 ## 🌐 Serviços em Produção
 
-| Serviço | URL |
-|---------|-----|
-| Auth | https://auth.ironvaultpayments.com.br |
-| Payments | https://api.ironvaultpayments.com.br |
+| Serviço       | URL                                            |
+| ------------- | ---------------------------------------------- |
+| Auth          | https://auth.ironvaultpayments.com.br          |
+| Payments      | https://api.ironvaultpayments.com.br           |
 | Notifications | https://notifications.ironvaultpayments.com.br |
-| BFF | https://bff.ironvaultpayments.com.br |
-| Backoffice | https://backoffice.ironvaultpayments.com.br |
-| Landing | https://landing.ironvaultpayments.com.br |
-| Merchants | https://merchants.ironvaultpayments.com.br |
+| BFF           | https://bff.ironvaultpayments.com.br           |
+| Backoffice    | https://backoffice.ironvaultpayments.com.br    |
+| Landing       | https://landing.ironvaultpayments.com.br       |
+| Merchants     | https://merchants.ironvaultpayments.com.br     |
 
 ## 🚀 Como Rodar Localmente
 
 ### Pré-requisitos
+
 - Java 21
 - Node.js 22+
 - Docker (para PostgreSQL e Redis local)
@@ -95,7 +100,7 @@ PostgreSQL PostgreSQL (emails)  PostgreSQL
 
 ### 1. Clonar os repositórios
 
-```bash
+````bash
 git clone https://github.com/viniciuspascucci1993/ironvault-auth.git
 git clone https://github.com/viniciuspascucci1993/ironvault-payments.git
 git clone https://github.com/viniciuspascucci1993/ironvault-notifications.git
@@ -127,7 +132,7 @@ cd ironvault-notifications
 # Merchants (porta 8083)
 cd ironvault-merchants
 ./mvnw spring-boot:run
-```
+````
 
 ### 4. Rodar o BFF
 
@@ -136,7 +141,6 @@ cd ironvault-bff
 npm install
 npm run dev
 ```
-
 
 ### 5. Rodar o Backoffice
 
@@ -154,13 +158,13 @@ Todos os serviços são deployados no **Railway** com deploy automático a parti
 
 ### Infraestrutura
 
-| Serviço | Plataforma | Observação |
-|---------|-----------|------------|
-| PostgreSQL | Neon (serverless) | 3 bancos separados |
-| Redis | Railway | Rate limiting |
-| Serviços Java | Railway | Deploy via Docker |
-| BFF | Railway | Node.js |
-| Backoffice | Railway | Next.js |
+| Serviço       | Plataforma        | Observação         |
+| ------------- | ----------------- | ------------------ |
+| PostgreSQL    | Neon (serverless) | 3 bancos separados |
+| Redis         | Railway           | Rate limiting      |
+| Serviços Java | Railway           | Deploy via Docker  |
+| BFF           | Railway           | Node.js            |
+| Backoffice    | Railway           | Next.js            |
 
 ### Ordem de deploy
 
@@ -175,16 +179,17 @@ Ao alterar algo que envolva a integração `merchantId` (auth ↔ merchants ↔ 
 
 ### Bancos de dados (Neon)
 
-| Banco | Serviço |
-|-------|---------|
-| ironvault-auth | Users, tokens, refresh tokens, api keys |
-| ironvault-payments | Payments, transactions, webhooks |
-| ironvault-notifications | Notification events, logs |
-| ironvault-merchants | Merchant profiles, gateway credentials (Mercado Pago) |
+| Banco                   | Serviço                                               |
+| ----------------------- | ----------------------------------------------------- |
+| ironvault-auth          | Users, tokens, refresh tokens, api keys               |
+| ironvault-payments      | Payments, transactions, webhooks                      |
+| ironvault-notifications | Notification events, logs                             |
+| ironvault-merchants     | Merchant profiles, gateway credentials (Mercado Pago) |
 
 ## 🔄 Fluxos Principais
 
 ### Registro de usuário
+
 ```
 1. POST /api/auth/register
 2. Auth salva usuário no banco
@@ -195,6 +200,7 @@ Ao alterar algo que envolva a integração `merchantId` (auth ↔ merchants ↔ 
 ```
 
 ### Login
+
 ```
 1. POST /api/auth/login
 2. Auth valida email e senha
@@ -205,6 +211,7 @@ Ao alterar algo que envolva a integração `merchantId` (auth ↔ merchants ↔ 
 ```
 
 ### Cadastro de lojista e conexão Mercado Pago (split payment)
+
 ```
 1. Lojista se cadastra na landing → User criado como PENDING no ironvault-auth
 2. Admin aprova o lojista no backoffice
@@ -217,6 +224,7 @@ Ao alterar algo que envolva a integração `merchantId` (auth ↔ merchants ↔ 
 ```
 
 ### Pagamento PIX
+
 ```
 1. POST /api/payments (JWT do lojista logado)
 2. Payments extrai o merchantId da claim do token e vincula ao Payment/Transaction
@@ -227,9 +235,8 @@ Ao alterar algo que envolva a integração `merchantId` (auth ↔ merchants ↔ 
 7. Webhook MercadoPago → atualiza status (APPROVED/FAILED)
 ```
 
-> O split de fato (pagamento usando o token do lojista + `application_fee`, para o dinheiro cair direto na conta dele) ainda está pendente de implementação — ver Roadmap.
-
 ### Recuperação de senha
+
 ```
 1. POST /api/auth/forgot-password
 2. Auth gera token de reset
@@ -242,17 +249,19 @@ Ao alterar algo que envolva a integração `merchantId` (auth ↔ merchants ↔ 
 ## 🗺️ Roadmap
 
 ### Em andamento
-- [ ] Split de pagamento de fato: `ironvault-payments` usar o `access_token` do lojista + `application_fee` na criação do PIX
+
 - [ ] Botão "Conectar Mercado Pago" no backoffice (frontend)
 - [ ] Endpoint de status de conexão MP (`GET /status/{merchantId}`) e redirect amigável no callback OAuth
 
 ### Próximos passos
+
 - [ ] Pagar.me (cartão de crédito) — aguarda abertura de MEI
 - [ ] E-commerce de calçados (primeiro cliente real)
 - [ ] Migração de `ddl-auto: update` para Flyway (controle de schema versionado)
 - [ ] CNPJ/regularização formal do IronVault antes de operar split com volume real
 
 ### Futuro
+
 - [ ] App mobile
 - [ ] API pública para integração de parceiros
 - [ ] Dashboard analytics avançado por MERCHANT
@@ -261,6 +270,7 @@ Ao alterar algo que envolva a integração `merchantId` (auth ↔ merchants ↔ 
 - [ ] Landing page institucional
 
 ### Concluído
+
 - [x] Auth completo (JWT, refresh, rate limit, email confirm, forgot/reset/change password)
 - [x] Payments PIX via MercadoPago
 - [x] Webhook MercadoPago implementado
@@ -292,3 +302,5 @@ Ao alterar algo que envolva a integração `merchantId` (auth ↔ merchants ↔ 
 - [x] Fluxo OAuth de conexão da conta Mercado Pago do lojista (authorize-url, callback, persistência do access_token/refresh_token)
 - [x] `merchantId` propagado em Payment e Transaction, com ownership check (dono ou ADMIN) em todos os endpoints de consulta
 - [x] Sincronização assíncrona `merchantId` entre ironvault-merchants e ironvault-auth, com claim `merchantId` no JWT
+- [x] Split de pagamento implementado: ironvault-payments usa o access_token
+      do lojista + application_fee (comissão configurável) na criação do PIX
