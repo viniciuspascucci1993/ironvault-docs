@@ -213,26 +213,30 @@ Ao alterar algo que envolva a integração `merchantId` (auth ↔ merchants ↔ 
 ### Cadastro de lojista e conexão Mercado Pago (split payment)
 
 ```
-1. Lojista se cadastra na landing → User criado como PENDING no ironvault-auth
-2. Admin aprova o lojista no backoffice
-3. Lojista loga e preenche o perfil de negócio → MerchantProfile criado no
-   ironvault-merchants (gera o merchantId)
-4. ironvault-merchants sincroniza o merchantId de volta ao ironvault-auth
+1. Lojista se cadastra na landing → BFF cria o User (PENDING) e já cria o
+   MerchantProfile no ironvault-merchants na mesma requisição (gera o merchantId)
+2. ironvault-merchants sincroniza o merchantId de volta ao ironvault-auth
+3. Admin aprova o lojista no backoffice
+4. Lojista redefine a senha (link recebido por email no cadastro) e loga
+   → JWT já vem com a claim merchantId
 5. Lojista conecta a própria conta Mercado Pago via OAuth
    (authorize-url → autorização → callback salva o access_token do lojista)
-6. Próximo login do lojista já emite JWT com a claim merchantId
 ```
 
-### Pagamento PIX
-
+### Pagamento PIX (com split)
 ```
 1. POST /api/payments (JWT do lojista logado)
 2. Payments extrai o merchantId da claim do token e vincula ao Payment/Transaction
-3. Payments gera PIX via MercadoPago
-4. Payments salva no banco com status PROCESSING
-5. Payments envia evento para Notifications
-6. Notifications envia email com QR Code
-7. Webhook MercadoPago → atualiza status (APPROVED/FAILED)
+3. Payments salva com status PROCESSING (outbox pattern)
+4. Scheduler assíncrono (a cada 500ms) dispara o processamento:
+   - Busca o access_token do lojista no ironvault-merchants
+   - Calcula a comissão do IronVault (`application_fee`, percentual configurável)
+   - Cria o PIX no Mercado Pago autenticado como o lojista
+5. Dinheiro cai direto na conta do lojista; comissão cai automaticamente
+   na conta do IronVault
+6. Payments envia evento para Notifications
+7. Notifications envia email com QR Code
+8. Webhook MercadoPago → atualiza status (APPROVED/FAILED)
 ```
 
 ### Recuperação de senha
