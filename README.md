@@ -370,3 +370,4 @@ Ao alterar algo que envolva a integração `merchantId` (auth ↔ merchants ↔ 
 - [x] Catálogo de produtos com variantes por tamanho, preço e estoque independentes
 - [x] Endpoints internos no ironvault-payments (`/api/internal/payments`) para criação e consulta de pagamento sem JWT de lojista, protegidos por `INTERNAL_API_KEY`
 - [x] Checkout de convidado end-to-end validado: produto → pedido → PIX com split payment, sem exigir login do cliente final
+- [x] Endurecimento de segurança: nenhum segredo versionado (`.env` fora do Git em todos os serviços) e BFF que se recusa a subir sem `JWT_SECRET` (fail closed, sem chave padrão)
