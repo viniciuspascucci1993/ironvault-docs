@@ -4,16 +4,15 @@ Gateway de pagamentos brasileiro focado em PIX, construído com arquitetura de m
 
 ## 📋 Índice
 
-- [Sobre o Projeto](#sobre-o-projeto)
-- [Arquitetura](#arquitetura)
-- [Stack Tecnológica](#stack-tecnológica)
-- [Serviços](#serviços)
-- [Como Rodar Localmente](#como-rodar-localmente)
-- [Deploy](#deploy)
-- [Variáveis de Ambiente](#variáveis-de-ambiente)
-- [Endpoints](#endpoints)
-- [Fluxos Principais](#fluxos-principais)
-- [Roadmap](#roadmap)
+- [Sobre o Projeto](#-sobre-o-projeto)
+- [Arquitetura](#-arquitetura)
+- [Stack Tecnológica](#-stack-tecnológica)
+- [Ambientes](#-ambientes)
+- [Como Rodar Localmente](#-como-rodar-localmente)
+- [Deploy](#-deploy)
+- [Fluxos Principais](#-fluxos-principais)
+- [Decisões técnicas](#-decisões-técnicas)
+- [Roadmap](#-roadmap)
 
 ## 💡 Sobre o Projeto
 
@@ -25,7 +24,9 @@ O IronVault Payments é um ecossistema completo de pagamentos desenvolvido do ze
 - **Developer Experience** — API bem documentada, BFF para o frontend
 - **Marketplace/Split payment** — cada lojista recebe direto na própria conta Mercado Pago, com comissão do IronVault retida automaticamente via `application_fee`
 
-## 🏗️ Arquitetura
+O ecossistema é composto por 5 serviços em Java (auth, payments, notifications, merchants e store), mais o BFF (Node.js/Fastify) e o backoffice (Next.js).
+
+## 📐 Arquitetura
 
 ```
 ironvault-backoffice (Next.js 16)
@@ -41,11 +42,16 @@ PostgreSQL PostgreSQL (emails)  PostgreSQL
     ↓         ↓
   Redis    Mercado Pago
 (rate limit)  (PIX / OAuth)
+
+ironvault-store (Java 21, monólito modular, Neon próprio)
+    → ironvault-payments (chamada interna, INTERNAL_API_KEY)
 ```
 
 `ironvault-auth` e `ironvault-merchants` trocam informação de forma assíncrona (via chamada interna autenticada por `INTERNAL_API_KEY`) para sincronizar o vínculo `userId ↔ merchantId`, permitindo que o JWT carregue a claim `merchantId` sem acoplar o login a uma chamada em tempo real entre os serviços.
 
-## 🛠️ Stack Tecnológica
+O `ironvault-store` cuida de catálogo, clientes, endereços e pedidos, e chama o `ironvault-payments` por um endpoint interno para criar o PIX do checkout.
+
+## 🧰 Stack Tecnológica
 
 ### Backend
 
@@ -77,17 +83,21 @@ PostgreSQL PostgreSQL (emails)  PostgreSQL
 - Neon (PostgreSQL serverless)
 - Redis (Railway)
 
-## 🌐 Serviços em Produção
+## 🌐 Ambientes
 
-| Serviço       | URL                                            |
-| ------------- | ---------------------------------------------- |
-| Auth          | https://auth.ironvaultpayments.com.br          |
-| Payments      | https://api.ironvaultpayments.com.br           |
-| Notifications | https://notifications.ironvaultpayments.com.br |
-| BFF           | https://bff.ironvaultpayments.com.br           |
-| Backoffice    | https://backoffice.ironvaultpayments.com.br    |
-| Landing       | https://landing.ironvaultpayments.com.br       |
-| Merchants     | https://merchants.ironvaultpayments.com.br     |
+| Serviço       | URL                                            | Status  |
+| ------------- | ---------------------------------------------- | ------- |
+| Auth          | https://auth.ironvaultpayments.com.br          | Pausado |
+| Payments      | https://api.ironvaultpayments.com.br           | Pausado |
+| Notifications | https://notifications.ironvaultpayments.com.br | Pausado |
+| BFF           | https://bff.ironvaultpayments.com.br           | Pausado |
+| Backoffice    | https://backoffice.ironvaultpayments.com.br    | Pausado |
+| Landing       | https://landing.ironvaultpayments.com.br       | Pausado |
+| Merchants     | https://merchants.ironvaultpayments.com.br     | Pausado |
+
+> Os ambientes (Railway e Neon) estão **pausados por custo** enquanto o projeto
+> não gera receita, e podem ser reativados a qualquer momento. Para ver o sistema
+> funcionando, suba o ambiente local seguindo a seção abaixo.
 
 ## 🚀 Como Rodar Localmente
 
@@ -100,19 +110,22 @@ PostgreSQL PostgreSQL (emails)  PostgreSQL
 
 ### 1. Clonar os repositórios
 
-````bash
+```bash
 git clone https://github.com/viniciuspascucci1993/ironvault-auth.git
+git clone https://github.com/viniciuspascucci1993/ironvault-store.git
 git clone https://github.com/viniciuspascucci1993/ironvault-payments.git
 git clone https://github.com/viniciuspascucci1993/ironvault-notifications.git
 git clone https://github.com/viniciuspascucci1993/ironvault-merchants.git
 git clone https://github.com/viniciuspascucci1993/ironvault-bff.git
 git clone https://github.com/viniciuspascucci1993/ironvault-backoffice.git
+```
 
 ### 2. Subir infraestrutura local (Docker)
 
 ```bash
 # No diretório do ironvault-auth
 docker-compose up -d
+```
 
 ### 3. Rodar os serviços Java
 
@@ -132,7 +145,11 @@ cd ironvault-notifications
 # Merchants (porta 8083)
 cd ironvault-merchants
 ./mvnw spring-boot:run
-````
+
+# Store (porta 8084)
+cd ironvault-store
+./mvnw spring-boot:run
+```
 
 ### 4. Rodar o BFF
 
@@ -154,13 +171,13 @@ Acessa `http://localhost:3000/login` 🚀
 
 ## 🚢 Deploy
 
-Todos os serviços são deployados no **Railway** com deploy automático a partir da branch principal (`main` ou `master`).
+Todos os serviços foram deployados no **Railway** com deploy automático a partir da branch principal (`main` ou `master`). No momento, os ambientes estão pausados (veja a seção Ambientes).
 
 ### Infraestrutura
 
 | Serviço       | Plataforma        | Observação         |
 | ------------- | ----------------- | ------------------ |
-| PostgreSQL    | Neon (serverless) | 3 bancos separados |
+| PostgreSQL    | Neon (serverless) | 5 bancos separados |
 | Redis         | Railway           | Rate limiting      |
 | Serviços Java | Railway           | Deploy via Docker  |
 | BFF           | Railway           | Node.js            |
@@ -174,17 +191,19 @@ Ao alterar algo que envolva a integração `merchantId` (auth ↔ merchants ↔ 
 2. `ironvault-auth`
 3. `ironvault-merchants`
 4. `ironvault-payments`
-5. `ironvault-bff`
-6. `ironvault-backoffice`
+5. `ironvault-store`
+6. `ironvault-bff`
+7. `ironvault-backoffice`
 
 ### Bancos de dados (Neon)
 
-| Banco                   | Serviço                                               |
-| ----------------------- | ----------------------------------------------------- |
-| ironvault-auth          | Users, tokens, refresh tokens, api keys               |
-| ironvault-payments      | Payments, transactions, webhooks                      |
-| ironvault-notifications | Notification events, logs                             |
-| ironvault-merchants     | Merchant profiles, gateway credentials (Mercado Pago) |
+| Banco                   | Serviço                                                               |
+| ----------------------- | --------------------------------------------------------------------- |
+| ironvault-auth          | Users, tokens, refresh tokens, api keys                               |
+| ironvault-payments      | Payments, transactions, webhooks                                      |
+| ironvault-notifications | Notification events, logs                                             |
+| ironvault-merchants     | Merchant profiles, gateway credentials (Mercado Pago)                 |
+| ironvault-store         | Products, product variants, customers, addresses, orders, order items |
 
 ## 🔄 Fluxos Principais
 
@@ -224,6 +243,7 @@ Ao alterar algo que envolva a integração `merchantId` (auth ↔ merchants ↔ 
 ```
 
 ### Pagamento PIX (com split)
+
 ```
 1. POST /api/payments (JWT do lojista logado)
 2. Payments extrai o merchantId da claim do token e vincula ao Payment/Transaction
@@ -239,6 +259,24 @@ Ao alterar algo que envolva a integração `merchantId` (auth ↔ merchants ↔ 
 8. Webhook MercadoPago → atualiza status (APPROVED/FAILED)
 ```
 
+### Checkout do e-commerce (cliente final, sem login)
+
+```
+1. Cliente final navega o catálogo (GET /api/products) e monta o carrinho
+2. POST /api/checkout no ironvault-store, sem autenticação, com:
+   dados do cliente (nome/email/telefone), endereço de entrega e itens
+3. ironvault-store busca ou cria o Customer pelo par (merchantId, email)
+4. ironvault-store salva o Address vinculado ao Customer
+5. ironvault-store cria o Order: valida estoque de cada ProductVariant,
+   busca o preço real (nunca confia no preço vindo do cliente) e calcula o total
+6. ironvault-store chama POST /api/internal/payments no ironvault-payments
+   (via INTERNAL_API_KEY, com Idempotency-Key derivada do orderId)
+7. ironvault-payments cria o PIX com split payment, usando o access_token
+   do lojista — mesmo fluxo de comissão do pagamento normal
+8. ironvault-store vincula o paymentId ao Order e devolve pro cliente:
+   orderId, totalAmount, QR code e código Pix copia-e-cola
+```
+
 ### Recuperação de senha
 
 ```
@@ -250,15 +288,35 @@ Ao alterar algo que envolva a integração `merchantId` (auth ↔ merchants ↔ 
 6. Auth atualiza senha
 ```
 
-## 🗺️ Roadmap
+## 🧠 Decisões técnicas
+
+- **Arquitetura hexagonal nos serviços Java:** o domínio fica isolado de framework
+  e de banco (sem anotações de relacionamento JPA nos modelos, UUID gerenciado
+  manualmente), o que facilita testar e evoluir.
+- **Outbox pattern nos pagamentos:** o pagamento é salvo como `PROCESSING` e o
+  evento é gravado junto, na mesma transação. Um scheduler (a cada 500ms) o
+  processa depois, evitando perder evento de pagamento se o processo cair no meio.
+- **`merchantId` no JWT:** `auth` e `merchants` sincronizam o vínculo de forma
+  assíncrona (chamada interna autenticada por `INTERNAL_API_KEY`), então o login
+  não depende de uma chamada em tempo real entre serviços.
+- **Split via `application_fee`:** cada lojista conecta a própria conta Mercado
+  Pago por OAuth; o PIX é criado autenticado como o lojista e a comissão do
+  IronVault é retida automaticamente.
+- **`ironvault-store` como monólito modular:** decisão deliberada de não começar
+  esse domínio como microsserviço.
+
+## 🧭 Roadmap
 
 ### Em andamento
 
 - [ ] Botão "Conectar Mercado Pago" no backoffice (frontend)
 - [ ] Endpoint de status de conexão MP (`GET /status/{merchantId}`) e redirect amigável no callback OAuth
+- [ ] `ironvault-storefront` (frontend do e-commerce, onde o cliente final navega e paga)
+- [ ] `GET /api/checkout/orders/{id}` para polling de status do pedido pelo storefront
 
 ### Próximos passos
 
+- [ ] Mensageria (Kafka e/ou RabbitMQ) no ironvault-notifications
 - [ ] Pagar.me (cartão de crédito) — aguarda abertura de MEI
 - [ ] E-commerce de calçados (primeiro cliente real)
 - [ ] Migração de `ddl-auto: update` para Flyway (controle de schema versionado)
@@ -275,6 +333,7 @@ Ao alterar algo que envolva a integração `merchantId` (auth ↔ merchants ↔ 
 
 ### Concluído
 
+- [x] Outbox pattern no payments, e dashboard com receita líquida e comissão por perfil
 - [x] Auth completo (JWT, refresh, rate limit, email confirm, forgot/reset/change password)
 - [x] Payments PIX via MercadoPago
 - [x] Webhook MercadoPago implementado
@@ -306,5 +365,8 @@ Ao alterar algo que envolva a integração `merchantId` (auth ↔ merchants ↔ 
 - [x] Fluxo OAuth de conexão da conta Mercado Pago do lojista (authorize-url, callback, persistência do access_token/refresh_token)
 - [x] `merchantId` propagado em Payment e Transaction, com ownership check (dono ou ADMIN) em todos os endpoints de consulta
 - [x] Sincronização assíncrona `merchantId` entre ironvault-merchants e ironvault-auth, com claim `merchantId` no JWT
-- [x] Split de pagamento implementado: ironvault-payments usa o access_token
-      do lojista + application_fee (comissão configurável) na criação do PIX
+- [x] Split de pagamento implementado: ironvault-payments usa o access_token do lojista + application_fee (comissão configurável) na criação do PIX
+- [x] Serviço ironvault-store criado (monólito modular: product, customer, address, order, checkout)
+- [x] Catálogo de produtos com variantes por tamanho, preço e estoque independentes
+- [x] Endpoints internos no ironvault-payments (`/api/internal/payments`) para criação e consulta de pagamento sem JWT de lojista, protegidos por `INTERNAL_API_KEY`
+- [x] Checkout de convidado end-to-end validado: produto → pedido → PIX com split payment, sem exigir login do cliente final
